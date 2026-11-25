@@ -1,0 +1,245 @@
+{
+  "name": "AI_EMAIL_Management_AGENT",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "q": "in:inbox"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "57cc82a3-3591-4929-a907-34cc3cf0557c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2u2Y2TyIySkGtoWv",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "624167eb-b08d-4555-997a-78f81485c0c5",
+              "name": "email_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "8c7bab5d-3c58-4d54-b4b5-09c9f9af9d6b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an intelligent AI Email Management Assistant.\n\nAnalyze the following incoming email:\n\nEmail Content:\n{{ $('Gmail Trigger').item.json.snippet }}\n\nPerform these tasks:\n\n1. Identify the purpose of the email.\n2. Classify it as Job, Business, Personal, Promotion, or Spam.\n3. Determine its priority: High, Medium, or Low.\n4. Summarize the email in 2-3 sentences.\n5. Generate a professional and relevant reply.\n\nDo not send any email automatically.\nOnly generate a draft for review.\n\n\n{{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a professional AI Email Management Assistant.\n\nYour responsibility is to analyze incoming emails and provide structured results.\n\nFor every email:\n\n1. Classification: Categorize the email as Job, Business, Personal, Promotion, or Spam.\n2. Priority: Assign High, Medium, or Low priority based on urgency and importance.\n3. Summary: Summarize the email in 2–3 clear sentences.\n4. Suggested Reply: Generate a professional, polite, and relevant reply based on the email content.\n\nRules:\n\n- Understand the complete email before responding.\n- Never invent information that is not present in the email.\n- Keep replies professional and concise.\n- If information is missing, do not assume it.\n- Never send emails automatically. Only generate suggested replies for human review.\n\nReturn the result using this structure:\n\nCategory:\nPriority:\nSummary:\nSuggested Reply:"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        608,
+        0
+      ],
+      "id": "07eec67c-57f0-4009-af42-64257c904c40",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        208
+      ],
+      "id": "743550e5-515d-42e5-9dc3-de005bc58e55",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Edit Fields').item.json.email_id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "225a1db1-67a3-4880-83c5-5e58d5fb9e0f",
+      "name": "Get a message",
+      "webhookId": "a7f40f2c-bb93-4587-8b09-9044bcdbb957",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2u2Y2TyIySkGtoWv",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"category\":\"Buisness\",\n  \"priority\":\"High\",\n  \"summary\":\"The email contains important buisness information.\",\n  \"suggested_reply\":\"Thankyou for your email.I will review the information and respond shortly.\"}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        208
+      ],
+      "id": "d5e91e70-e471-4c08-935d-bad42325cbcf",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Get a message').item.json.headers.subject}}",
+        "message": "=  {{ $json.output.suggested_reply }}",
+        "options": {
+          "sendTo": "={{ $('Get a message').item.json.headers.from.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i)?.[0] }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        928,
+        0
+      ],
+      "id": "b7ff7b80-f871-470a-9359-a8c6976ed52e",
+      "name": "Create a draft",
+      "webhookId": "b0b431b8-1e7e-42a7-ae49-40450d107595",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2u2Y2TyIySkGtoWv",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ab27aa3e-5ed5-4d73-ad83-ee8b9fc30288",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6753f08c9d11813ff175b65e51762ef1776c0fef0c3d4a607c069ed9df0f839a"
+  },
+  "nodeGroups": [],
+  "id": "oio4aL7tJMzh5ulC",
+  "tags": []
+}
