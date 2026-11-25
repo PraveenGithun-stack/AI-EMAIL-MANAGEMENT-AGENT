@@ -52,3 +52,13 @@ Users must configure their own Gmail and OpenAI credentials. No API keys or pass
 Author
 
 AI/ML Developer Portfolio Project
+## Project Screenshots
+
+### Workflow Overview
+![Workflow Overview](SCRN%20SHOT-AI%20EMAIL%20AUTOMATIONS.png)
+
+### Gmail Draft Screenshot
+![Gmail Draft](DRAFT-SCREENSHOT.jpeg)
+
+### Additional Automation Screenshot
+![Email Automation](scrnshot-ai%20email%20automation.png)
