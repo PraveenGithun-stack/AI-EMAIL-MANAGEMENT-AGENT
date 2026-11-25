@@ -58,7 +58,7 @@ AI/ML Developer Portfolio Project
 ![Workflow Overview](SCRN%20SHOT-AI%20EMAIL%20AUTOMATIONS.png)
 
 ### Gmail Draft Screenshot
-![Gmail Draft](DRAFT-SCREENSHOT.jpeg)
+![Gmail Draft](DRAFT%20-SCREENSHOT.jpeg)
 
 ### Additional Automation Screenshot
 ![Email Automation](scrnshot-ai%20email%20automation.png)
